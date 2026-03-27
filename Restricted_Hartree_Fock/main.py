@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import quad
+import scipy.special as sp
 
 #==========step1:対象分子の設定==========
 
@@ -148,15 +148,13 @@ def Nm_c(a): #GTOの規格化定数
     return (2*a/np.pi)**(3/4)
 
 #==========step2:正準直交化の実行==========
-
+# 重なり行列Sの計算(GTOをs型に限れば、解析計算は簡単になる)
 
 def S_prim(a:float, b:float, A:np.ndarray, B:np.ndarray): #原始GTO同士の重なり積分　←　多中心積分の公式とガウス積分から
         return (np.pi/(a+b))**(3/2) * np.exp(-a*b/(a+b)*np.linalg.norm(A-B)**2)
 
-
-# 重なり行列Sの計算(GTOをs型に限れば、解析計算は容易)
 def S(molecule_basis):
-    S=np.zeros((K, K))
+    S_mat=np.zeros((K, K))
 
     for m in range(K):
         for n in range(m, K):
@@ -172,11 +170,10 @@ def S(molecule_basis):
                 for j in range(len(alpha_n)):
                     s+=c_m[i]*c_n[j]*Nm_c(alpha_m[i])*Nm_c(alpha_n[j])*S_prim(alpha_m[i], alpha_n[j], A_m, A_n)
             
-            S[n][m]=s
-            S[m][n]=s
+            S_mat[n][m]=s
+            S_mat[m][n]=s
     
-    return S
-
+    return S_mat
 
 
 #Sの対角化
@@ -195,17 +192,33 @@ X=U@s_inv_sqrt
 
 
 #==========step3==========
-
-
-def T_prim(a:float, b:float, A:np.ndarray, B:np.ndarray):
-    return 
-
-
 #運動エネルギー項Tの計算
-def T(molecule_basis):
-    T=np.zeros((K, K))
+def T_prim(a:float, b:float, A:np.ndarray, B:np.ndarray):
+    return a*b/(a+b)*(3-2*a*b/(a+b)*np.linalg.norm(A-B)**2)*S_prim(a, b, A, B)
 
-    
+def T(molecule_basis):
+    T_mat=np.zeros((K, K))
+
+    for m in range(K):
+        for n in range(m, K):
+            alpha_m, alpha_n=molecule_basis[m]["exponents"], molecule_basis[n]["exponents"]
+            c_m, c_n=molecule_basis[m]["coefficients"], molecule_basis[n]["coefficients"]
+
+            A_m=molecule_basis[m]["center"]
+            A_n=molecule_basis[n]["center"]
+
+            t=0
+
+            for i in range(len(alpha_m)):
+                for j in range(len(alpha_n)):
+                    t+=c_m[i]*c_n[j]*Nm_c(alpha_m[i])*Nm_c(alpha_n[j])*T_prim(alpha_m[i], alpha_n[j], A_m, A_n)
+            
+            T_mat[m][n]=t
+            T_mat[n][m]=t
+
+    return T_mat
+
+print(T(molecule_basis))
 
 
 
