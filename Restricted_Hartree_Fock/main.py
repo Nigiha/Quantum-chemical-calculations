@@ -148,12 +148,15 @@ def Nm_c(a): #GTOの規格化定数
     return (2*a/np.pi)**(3/4)
 
 #==========step2:正準直交化の実行==========
-# 重なり行列Sの計算
+
+
+def S_prim(a:float, b:float, A:np.ndarray, B:np.ndarray): #原始GTO同士の重なり積分　←　多中心積分の公式とガウス積分から
+        return (np.pi/(a+b))**(3/2) * np.exp(-a*b/(a+b)*np.linalg.norm(A-B)**2)
+
+
+# 重なり行列Sの計算(GTOをs型に限れば、解析計算は容易)
 def S(molecule_basis):
     S=np.zeros((K, K))
-
-    def S_prim(a:float, b:float, A:np.ndarray, B:np.ndarray): #原始GTO同士の重なり積分←多中心積分の公式とガウス積分から
-        return (np.pi/(a+b))**(3/2) * np.exp(-a*b/(a+b)*np.linalg.norm(A-B)**2)
 
     for m in range(K):
         for n in range(m, K):
@@ -192,4 +195,18 @@ X=U@s_inv_sqrt
 
 
 #==========step3==========
+
+
+def T_prim(a:float, b:float, A:np.ndarray, B:np.ndarray):
+    return 
+
+
 #運動エネルギー項Tの計算
+def T(molecule_basis):
+    T=np.zeros((K, K))
+
+    
+
+
+
+#核引力項Vの計算
