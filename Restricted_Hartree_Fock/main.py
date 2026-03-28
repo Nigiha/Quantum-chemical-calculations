@@ -3,6 +3,7 @@ import scipy.special as sp
 
 #==========step1:対象分子の設定==========
 
+total_e=2 #全電子数
 
 target_molecule_file="HeH.xyz"
 base_function_file="STO-3G.json"
@@ -116,7 +117,7 @@ molecule_basis=build_molecule_basis(molecule, base_function_file)
 
 
 #核間反発エネルギーV_nucの計算
-# def V_nuc_matrix(molecule):
+# def V_nn_matrix(molecule):
 
 #     V=np.zeros((N, N))
     
@@ -129,7 +130,7 @@ molecule_basis=build_molecule_basis(molecule, base_function_file)
     
 #     return V
 
-def V_nuc_schalar(molecule):
+def V_nn_schalar(molecule):
 
     V=0
     
@@ -191,7 +192,7 @@ X=U@s_inv_sqrt
 
 
 
-#==========step3==========
+#==========step3:コアハミルトニアン行列の計算==========
 #運動エネルギー項Tの計算
 def T_prim(a:float, b:float, A:np.ndarray, B:np.ndarray):
     return a*b/(a+b)*(3-2*a*b/(a+b)*np.linalg.norm(A-B)**2)*S_prim(a, b, A, B)
@@ -222,4 +223,53 @@ print(T(molecule_basis))
 
 
 
-#核引力項Vの計算
+#核引力項V_neの計算
+
+#コアハミルトニアン行列Hの計算
+#後回し
+# H=T(molecule_basis)+V(molecule_basis)
+H=[[-2.62490, -1.50875],
+   [-1.50875, -1.77424]]
+
+#==========step4:密度行列の初期値の設定==========
+
+#直交化基底に対するコアハミルトニアン行列の計算
+H_prime=X.T@H@X
+
+
+#係数行列Cの計算(C_primeの初期値はH^を対角化する行列にしておく.最終的にはFock行列を対角化するものにしたい)
+H_val, C_prime=np.linalg.eigh(H_prime)
+C=X@C_prime
+
+num_occupied=total_e//2 #占有軌道の数
+C_occ=C[:, 0:num_occupied]
+
+
+#密度行列Pの計算
+P=2*C_occ@C_occ.T #P_(\mu\nu)=2\Sigma_i c_(\mu i)* c_(\nu i)
+
+
+
+
+
+
+#==========step5:電子反発積分の計算==========
+#(μν|λσ)の計算
+#後回し
+V_ee=[[1.05571, 0.46795, 0.60642],
+      [0.46795, 0.24649, 0.38864],
+      [0.60642, 0.38864, 0.77461]]
+
+
+
+
+
+#==========step6:Fock行列の計算==========
+
+#Coulomb積分Jの計算
+
+#交換積分Kの計算
+
+#2電子項Gの計算
+
+#Fock行列Fの計算
