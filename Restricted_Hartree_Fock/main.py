@@ -256,20 +256,101 @@ P=2*C_occ@C_occ.T #P_(\mu\nu)=2\Sigma_i c_(\mu i)* c_(\nu i)
 #==========step5:電子反発積分の計算==========
 #(μν|λσ)の計算
 #後回し
-V_ee=[[1.05571, 0.46795, 0.60642],
-      [0.46795, 0.24649, 0.38864],
-      [0.60642, 0.38864, 0.77461]]
+V_ee=[[1.0562, 0.4677, 0.6064],
+      [0.4677, 0.2465, 0.3887],
+      [0.6064, 0.3887, 0.7750]]
+
+def ERI(m, n, l, s):
+    return 0 ##################################
 
 
 
 
 
-#==========step6:Fock行列の計算==========
 
-#Coulomb積分Jの計算
 
-#交換積分Kの計算
+E_0_RHF_list=[float("inf")]
+E_conv=1e-6
+max_iter=100
 
-#2電子項Gの計算
+for iteration in range(max_iter):
+    #==========step6:Fock行列の計算==========
 
-#Fock行列Fの計算
+    #Coulomb積分Jの計算
+    def coulomb_integral(m, n):
+        I=0
+        for l in range(K):
+            for s in range(K):
+                I+=ERI(m, n, l, s)*P[l][s]
+        return I
+
+        
+    #交換積分Kの計算
+    def exchange_integral(m, n):
+        I=0
+        for l in range(K):
+            for s in range(K):
+                I+=ERI(m, s, l, n)*P[l][s]
+        return I
+
+
+    #2電子項Gの計算
+    G=np.zeros((K, K))
+    for m in range(K):
+        for n in range(K):
+            G[m][n]=coulomb_integral(m, n)-(1/2)*exchange_integral(m, n)
+
+
+    #Fock行列Fの計算
+    F=H+G
+
+
+
+
+
+
+    #===========step7:RHFエネルギーの計算==========
+
+    #E_0^RHFの計算 (行列を用いた計算に書き換えられる)
+    E_0_RHF=0
+    for m in range(K):
+        for n in range(K):
+            E_0_RHF+=(1/2)*P[m][n]*(H[m][n]+F[m][n])
+
+    E_0_RHF_list.append(E_0_RHF)
+
+    #E_tot^RHFの計算
+    E_tot_RHF=E_0_RHF+V_nn_schalar(molecule)
+
+
+    #==========step8:収束判定==========
+    #エネルギー変化による判定
+    if abs(E_0_RHF_list[-1]-E_0_RHF_list[-2])<E_conv:
+        break #step10へ
+
+
+
+    #==========step9:Roothaan方程式の解法==========
+
+    #直交化基底に対するFock行列F_primeの計算
+    F_prime=X.T@F@X
+
+    #C_primeの計算
+    E, C_prime=np.linalg.eigh(F_prime)
+
+    C=X@C_prime
+
+    num_occupied=total_e//2 #占有軌道の数
+    C_occ=C[:, 0:num_occupied]
+
+
+    #密度行列Pの計算
+    P=2*C_occ@C_occ.T #P_(\mu\nu)=2\Sigma_i c_(\mu i)* c_(\nu i)
+
+else:
+    print("not converge")
+
+
+
+#==========step10:分子物性の計算==========
+print("Total Energy:", E_tot_RHF)
