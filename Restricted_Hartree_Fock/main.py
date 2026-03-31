@@ -1,12 +1,19 @@
 import numpy as np
 import scipy.special as sp
 
+import integrals as integrals
+
 #==========step1:対象分子の設定==========
+
+
+#======================================
 
 total_e=2 #全電子数
 
 target_molecule_file="HeH.xyz"
 base_function_file="STO-3G.json"
+
+#======================================
 
 
 # 元素記号から原子番号への変換辞書リスト
@@ -189,9 +196,6 @@ U=vec_S
 X=U@s_inv_sqrt
 
 
-
-
-
 #==========step3:コアハミルトニアン行列の計算==========
 #運動エネルギー項Tの計算
 def T_prim(a:float, b:float, A:np.ndarray, B:np.ndarray):
@@ -212,24 +216,47 @@ def T(molecule_basis):
 
             for i in range(len(alpha_m)):
                 for j in range(len(alpha_n)):
-                    t+=c_m[i]*c_n[j]*Nm_c(alpha_m[i])*Nm_c(alpha_n[j])*T_prim(alpha_m[i], alpha_n[j], A_m, A_n)
+                        t+=c_m[i]*c_n[j]*Nm_c(alpha_m[i])*Nm_c(alpha_n[j])*T_prim(alpha_m[i], alpha_n[j], A_m, A_n)
             
             T_mat[m][n]=t
             T_mat[n][m]=t
 
     return T_mat
 
-print(T(molecule_basis))
+# print(T(molecule_basis))
 
 
 
 #核引力項V_neの計算
+def V_ne(molecule_basis):
+    V_ne_mat=np.zeros((K, K))
+
+    for m in range(K):
+        for n in range(m, K):
+            alpha_m, alpha_n=molecule_basis[m]["exponents"], molecule_basis[n]["exponents"]
+            c_m, c_n=molecule_basis[m]["coefficients"], molecule_basis[n]["coefficients"]
+            A_m, A_n=molecule_basis[m]["center"], molecule_basis[n]["center"]
+
+            v=0
+
+            for i in range(len(alpha_m)):
+                for j in range(len(alpha_n)):
+                    for atom in molecule:
+                        atom_center=atom["coord"]
+                        Z_c = symbol_to_Z[atom["symbol"]]
+                        v+=(-Z_c)*c_m[i]*c_n[j]*Nm_c(alpha_m[i])*Nm_c(alpha_n[j])*integrals.nuclear_attraction(alpha_m[i], (0,0,0), A_m, alpha_n[j], (0,0,0), A_n, atom_center)
+            
+            V_ne_mat[m][n]=v
+            V_ne_mat[n][m]=v
+
+    return V_ne_mat
+
+
 
 #コアハミルトニアン行列Hの計算
-#後回し
-# H=T(molecule_basis)+V(molecule_basis)
-H=[[-2.62490, -1.50875],
-   [-1.50875, -1.77424]]
+H=T(molecule_basis)+V_ne(molecule_basis)
+# H=[[-2.62490, -1.50875],
+#    [-1.50875, -1.77424]]
 
 #==========step4:密度行列の初期値の設定==========
 
@@ -260,9 +287,22 @@ V_ee=[[1.0562, 0.4677, 0.6064],
       [0.4677, 0.2465, 0.3887],
       [0.6064, 0.3887, 0.7750]]
 
-def ERI(m, n, l, s):
-    return 0 ##################################
+def calc_ERI(m, n, l, s):
+    alpha_m, alpha_n, alpha_l, alpha_s=molecule_basis[m]["exponents"], molecule_basis[n]["exponents"], molecule_basis[l]["exponents"], molecule_basis[s]["exponents"]
+    c_m, c_n, c_l, c_s=molecule_basis[m]["coefficients"], molecule_basis[n]["coefficients"], molecule_basis[l]["coefficients"], molecule_basis[s]["coefficients"]
+    A_m, A_n, A_l, A_s=molecule_basis[m]["center"], molecule_basis[n]["center"], molecule_basis[l]["center"], molecule_basis[s]["center"]
 
+    lmn=(0, 0, 0)
+
+    eri=0
+
+    for i_m in range(len(alpha_m)):
+        for i_n in range(len(alpha_n)):
+            for i_l in range(len(alpha_l)):
+                for i_s in range(len(alpha_s)):
+                    eri+=c_m[i_m]*c_n[i_n]*c_l[i_l]*c_s[i_s]*Nm_c(alpha_m[i_m])*Nm_c(alpha_n[i_n])*Nm_c(alpha_l[i_l])*Nm_c(alpha_s[i_s])*integrals.electron_repulsion(alpha_m[i_m], lmn, A_m, alpha_n[i_n], lmn, A_n, alpha_l[i_l], lmn, A_l, alpha_s[i_s], lmn, A_s)
+
+    return eri
 
 
 
@@ -281,7 +321,7 @@ for iteration in range(max_iter):
         I=0
         for l in range(K):
             for s in range(K):
-                I+=ERI(m, n, l, s)*P[l][s]
+                I+=calc_ERI(m, n, l, s)*P[l][s]
         return I
 
         
@@ -290,7 +330,7 @@ for iteration in range(max_iter):
         I=0
         for l in range(K):
             for s in range(K):
-                I+=ERI(m, s, l, n)*P[l][s]
+                I+=calc_ERI(m, s, l, n)*P[l][s]
         return I
 
 
@@ -352,5 +392,5 @@ else:
 
 
 
-#==========step10:分子物性の計算==========
-print("Total Energy:", E_tot_RHF)
+#==========step10:エネルギー値の出力==========
+print("Total Energy : {:.6f} hartree".format(E_tot_RHF))
