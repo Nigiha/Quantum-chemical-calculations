@@ -2,6 +2,7 @@ import numpy as np
 import json
 
 
+
 symbol_to_Z = {
     # 第1周期
     "H": 1, "He": 2,
