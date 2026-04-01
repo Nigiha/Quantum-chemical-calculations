@@ -23,16 +23,16 @@ symbol_to_Z = {
 
 def load_xyz(xyz_file, to_bohr=True):
 
-    load_xyz_data=[]
+    load_xyz_data={}
     num_atoms:int
     num_eles=0
 
     with open(xyz_file, "r", encoding="utf-8") as f:
         lines=f.readlines()
     
-    num_atoms=int(lines[0].strip())
+    load_xyz_data["N"]=int(lines[0].strip())
 
-    
+
     molcule_name=lines[1].strip()
 
     print("対象の分子 : "+molcule_name)
@@ -57,13 +57,17 @@ def load_xyz(xyz_file, to_bohr=True):
             y*=angstrom_to_bohr
             z*=angstrom_to_bohr
 
+
+        load_xyz_data["atom_shells"]={}
         load_xyz_data.append({
             "symbol": symbol,
             "Z": Z,
-            "coord":np.array([x, y, z])
+            "coord":np.ndarray([x, y, z])
         })
 
-    return load_xyz_data, num_atoms, electric_charge
+        load_xyz_data["N_e"]=num_eles
+
+    return load_xyz_data
 
 
 
@@ -99,6 +103,7 @@ def N_factor(a:float, l:tuple):
 def load_atom_basis(json_file, atom_symbol:str):
     
     extracted_shells=[]
+    K=0
 
     with open(json_file, "r", encoding="utf-8") as f:
         basis_data=json.load(f)
@@ -128,12 +133,18 @@ def load_atom_basis(json_file, atom_symbol:str):
                     normalization_factors=[N_factor(float(e), angular_momentum_vector) for e in shell["exponents"]]
 
                     extracted_shells.append({
-                        "angular_momentum": angular_momentum_vector,
+                        "angular_momentums": angular_momentum_vector,
                         "exponents": exponents,
                         "coefficients": coefficients,
                         "normalization_factors": normalization_factors,
                     })
 
-    return extracted_shells
+                    K+=1
+    
+    load_atom_data={}
+    load_atom_data["K"]=K
+    load_atom_data["electron_shells"]=extracted_shells
 
-# print(load_atom_basis("STO-3G.json", "O"))
+    return load_atom_data
+
+print(load_atom_basis("STO-3G.json", "O"))
