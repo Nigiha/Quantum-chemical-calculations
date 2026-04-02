@@ -42,7 +42,7 @@ def extract_shell_params(shell):
         shell["exponents"],
         shell["coefficients"],
         shell["normalization_factors"],
-        shell["angular_momentum"],
+        shell["angular_momentums"],
         shell["center"]
     )
 

@@ -40,6 +40,8 @@ def load_xyz(xyz_file, to_bohr=True):
     electric_charge=molcule_name.count("+")-molcule_name.count("-")
     num_eles-=electric_charge
 
+    load_xyz_data["atom_shells"]=[]
+
     for line in lines[2:]:
         if not line.strip():
             continue
@@ -58,11 +60,10 @@ def load_xyz(xyz_file, to_bohr=True):
             z*=angstrom_to_bohr
 
 
-        load_xyz_data["atom_shells"]={}
-        load_xyz_data.append({
+        load_xyz_data["atom_shells"].append({
             "symbol": symbol,
             "Z": Z,
-            "coord":np.ndarray([x, y, z])
+            "coord":np.array([x, y, z])
         })
 
         load_xyz_data["N_e"]=num_eles
@@ -147,4 +148,33 @@ def load_atom_basis(json_file, atom_symbol:str):
 
     return load_atom_data
 
-print(load_atom_basis("STO-3G.json", "O"))
+def build_molecule_basis(molecule_data, base_function_file):
+    molecule_basis={}
+    
+    molecule_list=[]
+    K=0
+    for atom in molecule_data["atom_shells"]:
+        symbol=atom["symbol"]
+        Z=atom["Z"]
+        xyz=atom["coord"]
+
+        atom_basis=load_atom_basis(base_function_file, symbol)
+        K+=atom_basis["K"]
+
+        for a_shell in atom_basis["electron_shells"]:
+            molecule_list.append({
+                "symbol": symbol,
+                "Z": Z,
+                "center": xyz,
+                "exponents": a_shell["exponents"],
+                "coefficients": a_shell["coefficients"],
+                "angular_momentums": a_shell["angular_momentums"],
+                "normalization_factors": a_shell["normalization_factors"]
+            })
+    
+    molecule_basis["K"]=K
+    molecule_basis["electron_shells"]=molecule_list
+
+    return molecule_basis
+
+        
