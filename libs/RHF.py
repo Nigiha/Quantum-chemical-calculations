@@ -101,3 +101,5 @@ def RHF(input_file, base_function_file, eps, max_iter):
     
     #==========step10:エネルギー値の出力==========
     print("Total Energy : {:.6f} hartree".format(E_tot_RHF))
+
+    return E_tot_RHF
