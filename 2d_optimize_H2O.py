@@ -1,5 +1,9 @@
 import libs.optimize as opt
 import pandas as pd
+import time
+
+start_time=time.time()
+
 raw_data="samples/H2O_opt.xyz"
 steps=[0.1, 0.1]
 val_ranges=[[-1.5, 1.5], [0.5, 1.5]]
@@ -11,8 +15,8 @@ opt_result, min_E, min_x, min_y=opt.optimize_H2O_type(raw_data, steps, val_range
 
 formatted_data = [
     {
-        "x (bohr)": res["variables"][0], 
-        "y (bohr)": res["variables"][1], 
+        "x (Å)": res["variables"][0], 
+        "y (Å)": res["variables"][1], 
         "Energy (hartree)": res["energy"]
     } 
     for res in opt_result
@@ -20,3 +24,6 @@ formatted_data = [
 df=pd.DataFrame(formatted_data)
 df.to_csv("Structural_optimization of H2O.csv", index=False)
 opt.double_d_figure_make(opt_result, min_E, min_x, min_y)
+
+end_time=time.time()
+print("実行時間: {:.0f}s".format(end_time-start_time))
