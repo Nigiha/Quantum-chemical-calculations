@@ -6,7 +6,7 @@ import libs.mtr_make as mtr
 
 
 
-def RHF(input_file, base_function_file, eps, max_iter):
+def RHF(input_file, base_function_file, eps, max_iter, print_E=True):
 
     #==========step1:対象分子の設定==========
     molecule_data=build_data.load_xyz(input_file, to_bohr=True)
@@ -98,8 +98,11 @@ def RHF(input_file, base_function_file, eps, max_iter):
     else:
         print("not converge")
 
+        return np.nan
+
     
     #==========step10:エネルギー値の出力==========
-    print("Total Energy : {:.6f} hartree".format(E_tot_RHF))
+    if print_E:
+        print("Total Energy : {:.6f} hartree".format(E_tot_RHF))
 
     return E_tot_RHF
