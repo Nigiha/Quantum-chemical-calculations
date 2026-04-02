@@ -23,7 +23,8 @@ formatted_data = [
 ]
 df=pd.DataFrame(formatted_data)
 df.to_csv("Structural_optimization of H2O.csv", index=False)
-opt.double_d_figure_make(opt_result, min_E, min_x, min_y)
 
 end_time=time.time()
 print("実行時間: {:.0f}s".format(end_time-start_time))
+
+opt.double_d_figure_make(opt_result, min_E, min_x, min_y)
