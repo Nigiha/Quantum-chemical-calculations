@@ -129,7 +129,8 @@ def V_ne_mat(molecule_basis, molecule_data):
     return V_ne_mat
 
 
-#電子反発項(修正必要)
+
+#電子反発項
 def V_ee_tensor(molecule_basis):
 
     K=molecule_basis["K"]
@@ -138,11 +139,21 @@ def V_ee_tensor(molecule_basis):
     V_ee_tens=np.zeros((K, K, K, K))
 
     for m in range(K):
-        for n in range(m, K):
-            for l in range(n, K):
-                for s in range(l, K):
-                    alpha_m, c_m, Nm_m, l_m, A_m = extract_shell_params(e_shells[m])
-                    alpha_n, c_n, Nm_n, l_n, A_n = extract_shell_params(e_shells[n])
+        for n in range(m+1):
+
+            mn=m*(m+1)//2+n #複合インデックス
+
+            alpha_m, c_m, Nm_m, l_m, A_m = extract_shell_params(e_shells[m])
+            alpha_n, c_n, Nm_n, l_n, A_n = extract_shell_params(e_shells[n])
+
+            for l in range(K):
+                for s in range(l+1):
+
+                    ls=l*(l+1)//2+s
+
+                    if mn < ls:
+                        continue
+                    
                     alpha_l, c_l, Nm_l, l_l, A_l = extract_shell_params(e_shells[l])
                     alpha_s, c_s, Nm_s, l_s, A_s = extract_shell_params(e_shells[s])
 
@@ -156,15 +167,42 @@ def V_ee_tensor(molecule_basis):
                                         Nm_m[i_m]*Nm_n[i_n]*Nm_l[i_l]*Nm_s[i_s]* \
                                         integrals.electron_repulsion(alpha_m[i_m], l_m, A_m, alpha_n[i_n], l_n, A_n, alpha_l[i_l], l_l, A_l, alpha_s[i_s], l_s, A_s)
                                     
-                    V_ee_tens[m][n][l][s]=v
-                    V_ee_tens[n][m][l][s]=v
-                    V_ee_tens[m][n][s][l]=v
-                    V_ee_tens[n][m][s][l]=v
-                    V_ee_tens[l][s][m][n]=v
-                    V_ee_tens[s][l][m][n]=v
-                    V_ee_tens[l][s][n][m]=v
-                    V_ee_tens[s][l][n][m]=v
+                    V_ee_tens[m, n, l, s]=v
+                    V_ee_tens[n, m, l, s]=v
+                    V_ee_tens[m, n, s, l]=v
+                    V_ee_tens[n, m, s, l]=v
+                    V_ee_tens[l, s, m, n]=v
+                    V_ee_tens[s, l, m, n]=v
+                    V_ee_tens[l, s, n, m]=v
+                    V_ee_tens[s, l, n, m]=v
             
     return V_ee_tens
 
+#Coulomb積分Jの計算
+def coulomb_integral(m, n, V_ee, P, K):
+    I=0
+    
+    for l in range(K):
+        for s in range(K):
+            I+=V_ee[m, n, l, s]*P[l][s]
+    
+    return I
 
+#交換積分Kの計算
+def exchange_integral(m, n, V_ee, P, K):
+    I=0
+
+    for l in range(K):
+        for s in range(K):
+            I+=V_ee[m, s, l, n]*P[l][s]
+    return I
+
+#2電子項Gの計算
+def G(V_ee, P, molecule_basis):
+    K=molecule_basis["K"]
+    G_mat=np.zeros((K, K))
+    for m in range(K):
+        for n in range(K):
+            G_mat[m][n]=coulomb_integral(m, n, V_ee, P, K)-(1/2)*exchange_integral(m, n, V_ee, P, K)
+    
+    return G_mat
