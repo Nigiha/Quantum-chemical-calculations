@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.special as sp
 
-import integrals as integrals
+import libs.integrals as integrals
 
 #==========step1:対象分子の設定==========
 
@@ -11,7 +11,7 @@ import integrals as integrals
 total_e=10 #全電子数
 
 target_molecule_file="samples/HeH+.xyz"
-base_function_file="STO-3G.json"
+base_function_file="base_function_data/STO-3G.json"
 
 #======================================
 

@@ -1,8 +1,8 @@
 import numpy as np
 
-import build_data
-import integrals
-import mtr_make as mtr
+import libs.build_data as build_data
+import libs.integrals as integrals
+import libs.mtr_make as mtr
 
 
 

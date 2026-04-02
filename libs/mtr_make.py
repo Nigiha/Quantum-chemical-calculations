@@ -1,6 +1,6 @@
 import numpy as np
 
-import integrals
+import libs.integrals as integrals
 
 #核間反発エネルギー
 def V_nn_schalar(molecule_data):
