@@ -4,7 +4,6 @@
 
 
 import numpy as np
-from scipy.special import factorial2 as fact2
 from scipy.special import hyp1f1
 
 
