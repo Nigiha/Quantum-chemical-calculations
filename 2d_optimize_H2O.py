@@ -5,9 +5,9 @@ import time
 start_time=time.time()
 
 raw_data="samples/H2O_opt.xyz"
-steps=[0.1, 0.1]
-val_ranges=[[-1.5, 1.5], [0.5, 1.5]]
-base_function_file="base_function_data/STO-3G.json"
+steps=[0.01, 0.01]
+val_ranges=[[-0.40, 0.40], [0.80, 1.20]]
+base_function_file="base_function_data/6-311G.json"
 eps=1e-6
 max_iter=100
 
