@@ -54,7 +54,7 @@ def S_mat(molecule_basis):
     K=molecule_basis["K"]
     e_shells=molecule_basis["electron_shells"]
 
-    S_mat=np.zeros((K, K))
+    S=np.zeros((K, K))
 
     for m in range(K):
         for n in range(m, K):
@@ -66,11 +66,11 @@ def S_mat(molecule_basis):
             for i in range(len(alpha_m)):
                 for j in range(len(alpha_n)):
                     s+=c_m[i]*c_n[j]*Nm_m[i]*Nm_n[j]*integrals.overlap(alpha_m[i], l_m, A_m, alpha_n[j], l_n, A_n)
-            
-            S_mat[m][n]=s
-            S_mat[n][m]=s
-    
-    return S_mat
+
+            S[m][n]=s
+            S[n][m]=s
+
+    return S
 
 
 
@@ -80,7 +80,7 @@ def T_mat(molecule_basis):
     K=molecule_basis["K"]
     e_shells=molecule_basis["electron_shells"]
 
-    T_mat=np.zeros((K, K))
+    T=np.zeros((K, K))
 
     for m in range(K):
         for n in range(m, K):
@@ -91,12 +91,12 @@ def T_mat(molecule_basis):
 
             for i in range(len(alpha_m)):
                 for j in range(len(alpha_n)):
-                        t+=c_m[i]*c_n[j]*Nm_m[i]*Nm_n[j]*integrals.kinetic(alpha_m[i], l_m, A_m, alpha_n[j], l_n, A_n)
-            
-            T_mat[m][n]=t
-            T_mat[n][m]=t
+                    t+=c_m[i]*c_n[j]*Nm_m[i]*Nm_n[j]*integrals.kinetic(alpha_m[i], l_m, A_m, alpha_n[j], l_n, A_n)
 
-    return T_mat
+            T[m][n]=t
+            T[n][m]=t
+
+    return T
 
 
 
@@ -107,7 +107,7 @@ def V_ne_mat(molecule_basis, molecule_data):
     e_shells=molecule_basis["electron_shells"]
     molecule=molecule_data["atom_shells"]
 
-    V_ne_mat=np.zeros((K, K))
+    V_ne=np.zeros((K, K))
 
     for m in range(K):
         for n in range(m, K):
@@ -122,11 +122,11 @@ def V_ne_mat(molecule_basis, molecule_data):
                         atom_center=atom["coord"]
                         Z_c = atom["Z"]
                         v+=(-Z_c)*c_m[i]*c_n[j]*Nm_m[i]*Nm_n[j]*integrals.nuclear_attraction(alpha_m[i], l_m, A_m, alpha_n[j], l_n, A_n, atom_center)
-            
-            V_ne_mat[m][n]=v
-            V_ne_mat[n][m]=v
 
-    return V_ne_mat
+            V_ne[m][n]=v
+            V_ne[n][m]=v
+
+    return V_ne
 
 
 
@@ -178,31 +178,33 @@ def V_ee_tensor(molecule_basis):
             
     return V_ee_tens
 
-#Coulomb積分Jの計算
-def coulomb_integral(m, n, V_ee, P, K):
-    I=0
+# #Coulomb積分Jの計算
+# def coulomb_integral(m, n, V_ee, P, K):
+#     I=0
     
-    for l in range(K):
-        for s in range(K):
-            I+=V_ee[m, n, l, s]*P[l][s]
+#     for l in range(K):
+#         for s in range(K):
+#             I+=V_ee[m, n, l, s]*P[l][s]
     
-    return I
+#     return I
 
-#交換積分Kの計算
-def exchange_integral(m, n, V_ee, P, K):
-    I=0
+# #交換積分Kの計算
+# def exchange_integral(m, n, V_ee, P, K):
+#     I=0
 
-    for l in range(K):
-        for s in range(K):
-            I+=V_ee[m, s, l, n]*P[l][s]
-    return I
+#     for l in range(K):
+#         for s in range(K):
+#             I+=V_ee[m, s, l, n]*P[l][s]
+#     return I
 
 #2電子項Gの計算
 def G(V_ee, P, molecule_basis):
-    K=molecule_basis["K"]
-    G_mat=np.zeros((K, K))
-    for m in range(K):
-        for n in range(K):
-            G_mat[m][n]=coulomb_integral(m, n, V_ee, P, K)-(1/2)*exchange_integral(m, n, V_ee, P, K)
+    # K=molecule_basis["K"]
+    # G_mat=np.zeros((K, K))
+    # for m in range(K):
+    #     for n in range(K):
+    #         G_mat[m][n]=coulomb_integral(m, n, V_ee, P, K)-(1/2)*exchange_integral(m, n, V_ee, P, K)
     
+    G_mat=np.einsum('mnls, ls->mn', V_ee, P)-0.5*np.einsum('msln, ls->mn', V_ee, P)
+
     return G_mat

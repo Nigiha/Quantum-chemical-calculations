@@ -11,6 +11,9 @@ def RHF(input_file, base_function_file, eps, max_iter, print_E=True):
     #==========step1:対象分子の設定==========
     molecule_data=build_data.load_xyz(input_file, to_bohr=True)
     total_e=molecule_data["N_e"]
+
+    if total_e%2!=0:
+        raise ValueError(f"RHF requires closed-shell: got {total_e} electrons")
     num_occupied=total_e//2 #占有軌道の数
 
     molecule_basis=build_data.build_molecule_basis(molecule_data, base_function_file)

@@ -1,5 +1,6 @@
 import numpy as np
 import json
+from functools import lru_cache
 
 
 
@@ -74,20 +75,9 @@ def load_xyz(xyz_file, to_bohr=True):
 
 
 #二重階乗(規格化factor部分で使う)
-fac2_=[0]
-f_odd=1
-f_even=1
-for i in range(1, 5):
-    if i%2==0:
-        f_even*=i
-        fac2_.append(f_even)
-    else:
-        f_odd*=i
-        fac2_.append(f_odd)
-
 def fac2(n):
     if n>0:
-        return fac2_[n]
+        return n*fac2(n-2)
     else:
         return 1
 
@@ -100,7 +90,7 @@ def N_factor(a:float, l:tuple):
 
     return numerartor / denominator
 
-
+@lru_cache(maxsize=None)
 def load_atom_basis(json_file, atom_symbol:str):
     
     extracted_shells=[]

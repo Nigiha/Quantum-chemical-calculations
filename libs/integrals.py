@@ -5,8 +5,9 @@
 
 import numpy as np
 from scipy.special import hyp1f1
+from functools import lru_cache
 
-
+@lru_cache(maxsize=None)
 def E(i,j,t,Qx,a,b):
     ''' Recursive definition of Hermite Gaussian coefficients.
         Returns a float.
@@ -86,7 +87,7 @@ def kinetic(a,lmn1,A,b,lmn2,B):
 
 
 
-
+@lru_cache(maxsize=None)
 def R(t,u,v,n,p,PCx,PCy,PCz,RPC):
     ''' Returns the Coulomb auxiliary Hermite integrals 
         Returns a float.
