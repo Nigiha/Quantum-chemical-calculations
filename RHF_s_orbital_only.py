@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import scipy.special as sp
 
@@ -5,13 +6,14 @@ import libs.integrals as integrals
 
 #==========step1:対象分子の設定==========
 
+DIR = os.path.dirname(os.path.abspath(__file__))
 
 #======================================
 
 total_e=10 #全電子数
 
-target_molecule_file="samples/HeH+.xyz"
-base_function_file="base_function_data/STO-3G.json"
+target_molecule_file=os.path.join(DIR, "samples/HeH+.xyz")
+base_function_file=os.path.join(DIR, "base_function_data/STO-3G.json")
 
 #======================================
 

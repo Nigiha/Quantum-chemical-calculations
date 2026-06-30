@@ -1,13 +1,16 @@
+import os
 import libs.optimize as opt
 import pandas as pd
 import time
 
+DIR = os.path.dirname(os.path.abspath(__file__))
+
 start_time=time.time()
 
-raw_data="samples/H2O_opt.xyz"
+raw_data=os.path.join(DIR, "samples/H2O_opt.xyz")
 steps=[0.01, 0.01]
 val_ranges=[[-0.40, 0.40], [0.80, 1.20]]
-base_function_file="base_function_data/6-311G.json"
+base_function_file=os.path.join(DIR, "base_function_data/6-311G.json")
 eps=1e-6
 max_iter=100
 
@@ -22,7 +25,7 @@ formatted_data = [
     for res in opt_result
 ]
 df=pd.DataFrame(formatted_data)
-df.to_csv("Structural_optimization of H2O.csv", index=False)
+df.to_csv(os.path.join(DIR, "Structural_optimization of H2O.csv"), index=False)
 
 end_time=time.time()
 print("実行時間: {:.0f}s".format(end_time-start_time))

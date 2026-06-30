@@ -1,8 +1,12 @@
+import os
 import libs.optimize as opt
-raw_data="samples/HeH+_opt.xyz"
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+
+raw_data=os.path.join(DIR, "samples/HeH+_opt.xyz")
 steps=[0.01]
 val_ranges=[[0.5, 1.5]]
-base_function_file="base_function_data/STO-3G.json"
+base_function_file=os.path.join(DIR, "base_function_data/STO-3G.json")
 eps=1e-6
 max_iter=100
 

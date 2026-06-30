@@ -1,8 +1,11 @@
+import os
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 
 import libs.RHF as RHF
+
+_PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #入力ファイル内の"a"のところに数値を代入して、各値でRHFを回す
 def optimize(raw_data, steps:list, val_ranges:list, base_function_file, eps, max_iter):
@@ -39,7 +42,7 @@ def optimize(raw_data, steps:list, val_ranges:list, base_function_file, eps, max
             lines[i][j]=str(new_data)
 
     
-        temp_xyz="temp_scan.xyz"
+        temp_xyz=os.path.join(_PROJ, "temp_scan.xyz")
         with open(temp_xyz, "w", encoding="utf-8") as f:
             for line in lines:
                 f.write(" ".join(line)+"\n")
@@ -113,7 +116,7 @@ def optimize_H2O_type(raw_data, steps:list, val_ranges:list, base_function_file,
         lines[i][j]=str(np.sqrt(r))
 
     
-        temp_xyz="temp_scan.xyz"
+        temp_xyz=os.path.join(_PROJ, "temp_scan.xyz")
         with open(temp_xyz, "w", encoding="utf-8") as f:
             for line in lines:
                 f.write(" ".join(line)+"\n")
